@@ -12,14 +12,16 @@ No manual setup. No separate EGC or GrapeRoot installs. Everything is fetched au
 ### macOS / Linux
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/your-org/the-link/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/UnforGBeast/thelink/main/thelink/install.sh | bash
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
-irm https://raw.githubusercontent.com/your-org/the-link/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/UnforGBeast/thelink/main/thelink/install.ps1 | iex
 ```
+
+> **Note:** the Windows command uses `install.ps1` — a native PowerShell script. Do **not** pipe the `.sh` file into `iex`; PowerShell cannot execute bash syntax.
 
 That's it. A global `link` command is now available in every terminal.
 
@@ -134,24 +136,23 @@ link "your query"
 
 If you prefer not to use the install scripts:
 
+### pipx (isolated — recommended)
+
+```bash
+pipx install the-link
+```
+
 ### pip (system Python)
 
 ```bash
 pip install the-link
 ```
 
-### pipx (isolated — recommended over pip)
-
-```bash
-pip install pipx
-pipx install the-link
-```
-
 ### From source
 
 ```bash
-git clone https://github.com/your-org/the-link
-cd the-link
+git clone https://github.com/UnforGBeast/thelink
+cd thelink
 pipx install .
 ```
 
@@ -162,13 +163,13 @@ pipx install .
 ### macOS / Linux
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/your-org/the-link/main/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/UnforGBeast/thelink/main/thelink/uninstall.sh | bash
 ```
 
 ### Windows
 
 ```powershell
-irm https://raw.githubusercontent.com/your-org/the-link/main/uninstall.ps1 | iex
+irm https://raw.githubusercontent.com/UnforGBeast/thelink/main/thelink/uninstall.ps1 | iex
 ```
 
 Or manually:
