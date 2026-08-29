@@ -39,6 +39,12 @@ import sys
 from pathlib import Path
 
 
+# ── Lazy imports (kept at module level for testability) ──────────────────────
+# Imported at module load so tests can patch thelink.cli.build_graph etc.
+from thelink.memory.reader import read_session_events  # noqa: E402
+from thelink.crusher import crush_events               # noqa: E402
+from thelink.graph import build_graph, extract_relevant_files  # noqa: E402
+
 # ── Logging (Calm-Tech: stderr only, no colour, no decoration) ───────────────
 _LOG_FORMAT = "[link] %(message)s"
 logging.basicConfig(stream=sys.stderr, format=_LOG_FORMAT, level=logging.WARNING)
@@ -135,21 +141,18 @@ def main(argv: list[str] | None = None) -> int:
     # ── Step 2: Recall ────────────────────────────────────────────────────────
     logger.info("recall: reading session events from %s", project_path)
     try:
-        from thelink.memory.reader import read_session_events
         events = read_session_events(project_path)
     except Exception as exc:  # noqa: BLE001
         logger.debug("recall failed: %s", exc)
         events = []
 
     logger.info("recall: %d events read, crushing...", len(events))
-    from thelink.crusher import crush_events
     compressed_history = crush_events(events)
     logger.info("recall: compressed to %d chars", len(compressed_history))
 
     # ── Step 3: Map ───────────────────────────────────────────────────────────
     logger.info("map: building semantic graph for %s", project_path)
     try:
-        from thelink.graph import build_graph, extract_relevant_files
         graph_data = build_graph(project_path, graph_out)
     except ImportError as exc:
         print(f"[link] error: {exc}", file=sys.stderr)
@@ -159,7 +162,6 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     logger.info("map: extracting relevant files (top %d)...", args.top_n)
-    from thelink.graph import extract_relevant_files
     relevant_files = extract_relevant_files(
         graph_data,
         query=args.query,
