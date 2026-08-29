@@ -12,13 +12,13 @@ No manual setup. No separate EGC or GrapeRoot installs. Everything is fetched au
 ### macOS / Linux
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/UnforGBeast/thelink/main/thelink/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/UnforGBeast/thelink/main/install.sh | bash
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
-irm https://raw.githubusercontent.com/UnforGBeast/thelink/install.ps1 | iex
+irm https://raw.githubusercontent.com/UnforGBeast/thelink/main/install.ps1 | iex
 ```
 
 > **Note:** the Windows command uses `install.ps1` — a native PowerShell script. Do **not** pipe the `.sh` file into `iex`; PowerShell cannot execute bash syntax.
@@ -163,13 +163,13 @@ pipx install .
 ### macOS / Linux
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/UnforGBeast/thelink/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/UnforGBeast/thelink/main/uninstall.sh | bash
 ```
 
 ### Windows
 
 ```powershell
-irm https://raw.githubusercontent.com/UnforGBeast/thelink/uninstall.ps1 | iex
+irm https://raw.githubusercontent.com/UnforGBeast/thelink/main/uninstall.ps1 | iex
 ```
 
 Or manually:

@@ -9,7 +9,7 @@
 #   4. Verifies the `link` command is on PATH
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/your-org/the-link/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/UnforGBeast/thelink/main/install.sh | bash
 #   — or —
 #   bash install.sh
 # ─────────────────────────────────────────────────────────────────────────────
