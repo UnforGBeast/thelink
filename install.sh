@@ -15,7 +15,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
-REPO_URL="https://github.com/your-org/the-link"
+REPO_URL="https://github.com/UnforGBeast/thelink"
 MIN_PYTHON_MAJOR=3
 MIN_PYTHON_MINOR=10
 

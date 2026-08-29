@@ -1,0 +1,2 @@
+[console_scripts]
+link = thelink.cli:main
