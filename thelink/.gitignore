@@ -1,0 +1,19 @@
+# Virtual environment
+.venv/
+venv/
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Generated graph files
+info_graph.json
+info_graph.db
+.dual-graph/
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
