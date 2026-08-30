@@ -1,5 +1,11 @@
+LICENSE
 README.md
 pyproject.toml
+tests/test_cli.py
+tests/test_crusher.py
+tests/test_e2e.py
+tests/test_graph.py
+tests/test_memory.py
 the_link.egg-info/PKG-INFO
 the_link.egg-info/SOURCES.txt
 the_link.egg-info/dependency_links.txt
