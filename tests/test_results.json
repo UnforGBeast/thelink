@@ -1,27 +1,27 @@
 {
-  "suite": "The Link — Test Suite",
+  "suite": "The Link \u2014 Test Suite (Phase 1)",
   "version": "1.0.0",
-  "run_at": "2026-08-29T21:35:38",
+  "run_at": "2026-09-06T00:45:16",
   "environment": {
     "python": "3.14.4",
     "graperoot": "3.10.10",
-    "platform": "Windows 10 (win32 x64)",
+    "platform": "Windows 10 (10.0.19045, win32 AMD64)",
     "runner": "python -m unittest discover tests/ -v"
   },
   "summary": {
-    "total": 126,
-    "passed": 125,
+    "total": 177,
+    "passed": 176,
     "failed": 0,
     "errors": 0,
     "skipped": 1,
-    "duration_seconds": 4.127,
+    "duration_seconds": 15.0,
     "status": "PASS"
   },
   "modules": [
     {
       "module": "tests.test_crusher",
       "file": "tests/test_crusher.py",
-      "description": "Token Crusher — unit tests for the EGC array-crusher port",
+      "description": "Token Crusher \u2014 unit tests for the EGC array-crusher port",
       "total": 36,
       "passed": 36,
       "failed": 0,
@@ -33,66 +33,210 @@
           "class": "TestToKey",
           "description": "Cell-value serialisation (_to_key)",
           "tests": [
-            { "name": "test_none_returns_null_sentinel",   "result": "pass", "description": "None maps to '__null__' sentinel string" },
-            { "name": "test_string_passthrough",           "result": "pass", "description": "Plain strings pass through unchanged" },
-            { "name": "test_int_stringified",              "result": "pass", "description": "Integers are cast to string" },
-            { "name": "test_dict_json_serialised",         "result": "pass", "description": "Dicts are JSON-serialised" },
-            { "name": "test_list_json_serialised",         "result": "pass", "description": "Lists are JSON-serialised compact" },
-            { "name": "test_zero_not_null",                "result": "pass", "description": "0 is '0', not '__null__'" },
-            { "name": "test_empty_string",                 "result": "pass", "description": "Empty string returns empty string" }
+            {
+              "name": "test_none_returns_null_sentinel",
+              "result": "pass",
+              "description": "None maps to '__null__' sentinel string"
+            },
+            {
+              "name": "test_string_passthrough",
+              "result": "pass",
+              "description": "Plain strings pass through unchanged"
+            },
+            {
+              "name": "test_int_stringified",
+              "result": "pass",
+              "description": "Integers are cast to string"
+            },
+            {
+              "name": "test_dict_json_serialised",
+              "result": "pass",
+              "description": "Dicts are JSON-serialised"
+            },
+            {
+              "name": "test_list_json_serialised",
+              "result": "pass",
+              "description": "Lists are JSON-serialised compact"
+            },
+            {
+              "name": "test_zero_not_null",
+              "result": "pass",
+              "description": "0 is '0', not '__null__'"
+            },
+            {
+              "name": "test_empty_string",
+              "result": "pass",
+              "description": "Empty string returns empty string"
+            }
           ]
         },
         {
           "class": "TestColumnCardinality",
           "description": "Column-cardinality ratio calculation",
           "tests": [
-            { "name": "test_all_identical_is_zero",        "result": "pass", "description": "All-same column → low cardinality" },
-            { "name": "test_all_unique_is_one",            "result": "pass", "description": "All-unique column → cardinality = 1.0" },
-            { "name": "test_empty_rows_is_zero",           "result": "pass", "description": "Empty row list → 0.0" },
-            { "name": "test_missing_key_counts_as_null",   "result": "pass", "description": "Missing keys treated as __null__" },
-            { "name": "test_half_unique",                  "result": "pass", "description": "Half-unique column → ~0.5 cardinality" }
+            {
+              "name": "test_all_identical_is_zero",
+              "result": "pass",
+              "description": "All-same column \u2192 low cardinality"
+            },
+            {
+              "name": "test_all_unique_is_one",
+              "result": "pass",
+              "description": "All-unique column \u2192 cardinality = 1.0"
+            },
+            {
+              "name": "test_empty_rows_is_zero",
+              "result": "pass",
+              "description": "Empty row list \u2192 0.0"
+            },
+            {
+              "name": "test_missing_key_counts_as_null",
+              "result": "pass",
+              "description": "Missing keys treated as __null__"
+            },
+            {
+              "name": "test_half_unique",
+              "result": "pass",
+              "description": "Half-unique column \u2192 ~0.5 cardinality"
+            }
           ]
         },
         {
           "class": "TestRowSignature",
           "description": "Row fingerprinting for deduplication",
           "tests": [
-            { "name": "test_same_rows_same_signature",          "result": "pass", "description": "Identical rows produce identical signatures" },
-            { "name": "test_different_rows_different_signatures","result": "pass", "description": "Different values produce different signatures" },
-            { "name": "test_truncated_to_32_chars",             "result": "pass", "description": "Each field contribution capped at 32 chars" },
-            { "name": "test_empty_keys_list",                   "result": "pass", "description": "Empty key list returns empty string" }
+            {
+              "name": "test_same_rows_same_signature",
+              "result": "pass",
+              "description": "Identical rows produce identical signatures"
+            },
+            {
+              "name": "test_different_rows_different_signatures",
+              "result": "pass",
+              "description": "Different values produce different signatures"
+            },
+            {
+              "name": "test_truncated_to_32_chars",
+              "result": "pass",
+              "description": "Each field contribution capped at 32 chars"
+            },
+            {
+              "name": "test_empty_keys_list",
+              "result": "pass",
+              "description": "Empty key list returns empty string"
+            }
           ]
         },
         {
           "class": "TestReduceRows",
           "description": "Row deduplication and head-tail cap algorithm",
           "tests": [
-            { "name": "test_below_min_rows_returns_none", "result": "pass", "description": "< MIN_ROWS input returns None (no reduction)" },
-            { "name": "test_dedup_identical_rows",        "result": "pass", "description": "Identical rows collapse to fewer unique rows" },
-            { "name": "test_cap_at_max_rows",             "result": "pass", "description": "Output never exceeds MAX_ROWS=10" },
-            { "name": "test_head_tail_strategy",          "result": "pass", "description": "Keeps first and last rows after cap" },
-            { "name": "test_no_reduction_if_already_small","result": "pass", "description": "No reduction if input already small enough" }
+            {
+              "name": "test_below_min_rows_returns_none",
+              "result": "pass",
+              "description": "< MIN_ROWS input returns None (no reduction)"
+            },
+            {
+              "name": "test_dedup_identical_rows",
+              "result": "pass",
+              "description": "Identical rows collapse to fewer unique rows"
+            },
+            {
+              "name": "test_cap_at_max_rows",
+              "result": "pass",
+              "description": "Output never exceeds MAX_ROWS=10"
+            },
+            {
+              "name": "test_head_tail_strategy",
+              "result": "pass",
+              "description": "Keeps first and last rows after cap"
+            },
+            {
+              "name": "test_no_reduction_if_already_small",
+              "result": "pass",
+              "description": "No reduction if input already small enough"
+            }
           ]
         },
         {
           "class": "TestCrushEvents",
-          "description": "Public API — crush_events() end-to-end",
+          "description": "Public API \u2014 crush_events() end-to-end",
           "tests": [
-            { "name": "test_filters_out_non_observable_types",    "result": "pass", "description": "Non-observable event types stripped" },
-            { "name": "test_empty_events_returns_empty_string",   "result": "pass", "description": "Empty input → empty output" },
-            { "name": "test_all_filtered_returns_empty_string",   "result": "pass", "description": "All non-observable → empty output" },
-            { "name": "test_all_observable_types_pass_through",   "result": "pass", "description": "All 10 observable types survive filter" },
-            { "name": "test_observe_schema_field_name",           "result": "pass", "description": "observe.sh 'event' field also recognised" },
-            { "name": "test_output_is_plain_text_lines",          "result": "pass", "description": "Output is plain text with date brackets" },
-            { "name": "test_one_line_per_event",                  "result": "pass", "description": "Each event produces exactly one line" },
-            { "name": "test_line_contains_tool_name",             "result": "pass", "description": "Tool name appears in output line" },
-            { "name": "test_dict_data_content_serialised",        "result": "pass", "description": "Dict content is JSON-serialised inline" },
-            { "name": "test_respects_max_chars",                  "result": "pass", "description": "Output never exceeds max_chars" },
-            { "name": "test_truncates_to_last_complete_line",     "result": "pass", "description": "Truncation is at last complete newline" },
-            { "name": "test_default_budget_is_8000",              "result": "pass", "description": "Default budget is 8,000 chars" },
-            { "name": "test_zero_max_chars_returns_empty",        "result": "pass", "description": "max_chars=0 returns empty string" },
-            { "name": "test_many_identical_events_compressed",    "result": "pass", "description": "50 identical events compress to ≤10 lines" },
-            { "name": "test_diverse_events_kept",                 "result": "pass", "description": "5 unique events all survive (below MIN_ROWS)" }
+            {
+              "name": "test_filters_out_non_observable_types",
+              "result": "pass",
+              "description": "Non-observable event types stripped"
+            },
+            {
+              "name": "test_empty_events_returns_empty_string",
+              "result": "pass",
+              "description": "Empty input \u2192 empty output"
+            },
+            {
+              "name": "test_all_filtered_returns_empty_string",
+              "result": "pass",
+              "description": "All non-observable \u2192 empty output"
+            },
+            {
+              "name": "test_all_observable_types_pass_through",
+              "result": "pass",
+              "description": "All 10 observable types survive filter"
+            },
+            {
+              "name": "test_observe_schema_field_name",
+              "result": "pass",
+              "description": "observe.sh 'event' field also recognised"
+            },
+            {
+              "name": "test_output_is_plain_text_lines",
+              "result": "pass",
+              "description": "Output is plain text with date brackets"
+            },
+            {
+              "name": "test_one_line_per_event",
+              "result": "pass",
+              "description": "Each event produces exactly one line"
+            },
+            {
+              "name": "test_line_contains_tool_name",
+              "result": "pass",
+              "description": "Tool name appears in output line"
+            },
+            {
+              "name": "test_dict_data_content_serialised",
+              "result": "pass",
+              "description": "Dict content is JSON-serialised inline"
+            },
+            {
+              "name": "test_respects_max_chars",
+              "result": "pass",
+              "description": "Output never exceeds max_chars"
+            },
+            {
+              "name": "test_truncates_to_last_complete_line",
+              "result": "pass",
+              "description": "Truncation is at last complete newline"
+            },
+            {
+              "name": "test_default_budget_is_8000",
+              "result": "pass",
+              "description": "Default budget is 8,000 chars"
+            },
+            {
+              "name": "test_zero_max_chars_returns_empty",
+              "result": "pass",
+              "description": "max_chars=0 returns empty string"
+            },
+            {
+              "name": "test_many_identical_events_compressed",
+              "result": "pass",
+              "description": "50 identical events compress to \u226410 lines"
+            },
+            {
+              "name": "test_diverse_events_kept",
+              "result": "pass",
+              "description": "5 unique events all survive (below MIN_ROWS)"
+            }
           ]
         }
       ]
@@ -100,7 +244,7 @@
     {
       "module": "tests.test_memory",
       "file": "tests/test_memory.py",
-      "description": "Memory Engine — paths helpers and JSONL session reader",
+      "description": "Memory Engine \u2014 paths helpers and JSONL session reader",
       "total": 20,
       "passed": 20,
       "failed": 0,
@@ -112,38 +256,118 @@
           "class": "TestPaths",
           "description": "Path helper functions with env-override coverage",
           "tests": [
-            { "name": "test_home_dir_returns_path",                    "result": "pass", "description": "home_dir() returns an absolute Path" },
-            { "name": "test_egc_home_default_is_dotgemini",            "result": "pass", "description": "Default egc_home() ends with .gemini" },
-            { "name": "test_egc_home_env_override",                    "result": "pass", "description": "EGC_HOME env var overrides default" },
-            { "name": "test_egc_state_dir_falls_back_to_egc_home",     "result": "pass", "description": "egc_state_dir() falls back to egc_home()" },
-            { "name": "test_egc_canonical_sessions_dir_is_under_state","result": "pass", "description": "session-data is under state dir" },
-            { "name": "test_egc_session_dir_env_override",             "result": "pass", "description": "EGC_SESSION_DIR env var overrides" },
-            { "name": "test_project_root_env_override",                "result": "pass", "description": "PROJECT_ROOT env var overrides cwd" },
-            { "name": "test_project_root_defaults_to_cwd",             "result": "pass", "description": "project_root() defaults to cwd()" }
+            {
+              "name": "test_home_dir_returns_path",
+              "result": "pass",
+              "description": "home_dir() returns an absolute Path"
+            },
+            {
+              "name": "test_egc_home_default_is_dotgemini",
+              "result": "pass",
+              "description": "Default egc_home() ends with .gemini"
+            },
+            {
+              "name": "test_egc_home_env_override",
+              "result": "pass",
+              "description": "EGC_HOME env var overrides default"
+            },
+            {
+              "name": "test_egc_state_dir_falls_back_to_egc_home",
+              "result": "pass",
+              "description": "egc_state_dir() falls back to egc_home()"
+            },
+            {
+              "name": "test_egc_canonical_sessions_dir_is_under_state",
+              "result": "pass",
+              "description": "session-data is under state dir"
+            },
+            {
+              "name": "test_egc_session_dir_env_override",
+              "result": "pass",
+              "description": "EGC_SESSION_DIR env var overrides"
+            },
+            {
+              "name": "test_project_root_env_override",
+              "result": "pass",
+              "description": "PROJECT_ROOT env var overrides cwd"
+            },
+            {
+              "name": "test_project_root_defaults_to_cwd",
+              "result": "pass",
+              "description": "project_root() defaults to cwd()"
+            }
           ]
         },
         {
           "class": "TestReader",
           "description": "read_session_events() with fixture JSONL files",
           "tests": [
-            { "name": "test_returns_empty_list_when_no_sessions",  "result": "pass", "description": "No session dirs → empty list" },
-            { "name": "test_reads_events_from_local_sessions",     "result": "pass", "description": "Reads events from .sessions/ dir" },
-            { "name": "test_events_are_dicts",                     "result": "pass", "description": "Each event is a dict" },
-            { "name": "test_event_content_preserved",              "result": "pass", "description": "Event fields are preserved verbatim" },
-            { "name": "test_multiple_jsonl_files_all_read",        "result": "pass", "description": "Multiple .jsonl files all read" },
-            { "name": "test_no_local_sessions_dir_still_works",    "result": "pass", "description": "Missing .sessions/ is not an error" }
+            {
+              "name": "test_returns_empty_list_when_no_sessions",
+              "result": "pass",
+              "description": "No session dirs \u2192 empty list"
+            },
+            {
+              "name": "test_reads_events_from_local_sessions",
+              "result": "pass",
+              "description": "Reads events from .sessions/ dir"
+            },
+            {
+              "name": "test_events_are_dicts",
+              "result": "pass",
+              "description": "Each event is a dict"
+            },
+            {
+              "name": "test_event_content_preserved",
+              "result": "pass",
+              "description": "Event fields are preserved verbatim"
+            },
+            {
+              "name": "test_multiple_jsonl_files_all_read",
+              "result": "pass",
+              "description": "Multiple .jsonl files all read"
+            },
+            {
+              "name": "test_no_local_sessions_dir_still_works",
+              "result": "pass",
+              "description": "Missing .sessions/ is not an error"
+            }
           ]
         },
         {
           "class": "TestReaderEdgeCases",
-          "description": "Reader edge cases — malformed input, limits, encoding",
+          "description": "Reader edge cases \u2014 malformed input, limits, encoding",
           "tests": [
-            { "name": "test_skips_malformed_json_lines",  "result": "pass", "description": "Non-JSON lines are silently skipped" },
-            { "name": "test_skips_blank_lines",           "result": "pass", "description": "Blank lines are ignored" },
-            { "name": "test_max_events_cap_enforced",     "result": "pass", "description": "Output never exceeds MAX_EVENTS=500" },
-            { "name": "test_none_project_path_uses_cwd",  "result": "pass", "description": "None project_path falls back to cwd" },
-            { "name": "test_unicode_content_handled",     "result": "pass", "description": "Unicode (CJK, symbols) read correctly" },
-            { "name": "test_empty_jsonl_file_handled",    "result": "pass", "description": "Empty .jsonl file does not error" }
+            {
+              "name": "test_skips_malformed_json_lines",
+              "result": "pass",
+              "description": "Non-JSON lines are silently skipped"
+            },
+            {
+              "name": "test_skips_blank_lines",
+              "result": "pass",
+              "description": "Blank lines are ignored"
+            },
+            {
+              "name": "test_max_events_cap_enforced",
+              "result": "pass",
+              "description": "Output never exceeds MAX_EVENTS=500"
+            },
+            {
+              "name": "test_none_project_path_uses_cwd",
+              "result": "pass",
+              "description": "None project_path falls back to cwd"
+            },
+            {
+              "name": "test_unicode_content_handled",
+              "result": "pass",
+              "description": "Unicode (CJK, symbols) read correctly"
+            },
+            {
+              "name": "test_empty_jsonl_file_handled",
+              "result": "pass",
+              "description": "Empty .jsonl file does not error"
+            }
           ]
         }
       ]
@@ -151,61 +375,399 @@
     {
       "module": "tests.test_graph",
       "file": "tests/test_graph.py",
-      "description": "Graph wrapper — graperoot guard, suppression, scoring (no live graperoot scan)",
-      "total": 25,
-      "passed": 25,
+      "description": "Graph wrapper \u2014 graperoot guard, suppression, scoring, info_graph.json schema conformance (no live graperoot scan)",
+      "total": 37,
+      "passed": 37,
       "failed": 0,
       "errors": 0,
       "skipped": 0,
-      "duration_seconds": 0.53,
+      "duration_seconds": 0.07,
       "classes": [
         {
           "class": "TestCheckGraperoot",
           "description": "graperoot availability guard",
           "tests": [
-            { "name": "test_raises_import_error_when_absent", "result": "pass", "description": "ImportError raised with pip install hint when absent" },
-            { "name": "test_no_error_when_present",           "result": "pass", "description": "No exception raised when graperoot importable" }
+            {
+              "name": "test_raises_import_error_when_absent",
+              "result": "pass",
+              "description": "ImportError raised with pip install hint when absent"
+            },
+            {
+              "name": "test_no_error_when_present",
+              "result": "pass",
+              "description": "No exception raised when graperoot importable"
+            }
           ]
         },
         {
           "class": "TestSuppressGraperoot",
           "description": "Side-effect file suppression",
           "tests": [
-            { "name": "test_deletes_chat_action_graph", "result": "pass", "description": "chat_action_graph.json deleted after build" },
-            { "name": "test_deletes_context_store",     "result": "pass", "description": "context-store.json deleted after build" },
-            { "name": "test_both_deleted_together",     "result": "pass", "description": "Both suppressed files deleted in one call" },
-            { "name": "test_no_error_when_files_absent","result": "pass", "description": "No error if files don't exist" },
-            { "name": "test_other_files_not_deleted",   "result": "pass", "description": "info_graph.json is not deleted" }
+            {
+              "name": "test_deletes_chat_action_graph",
+              "result": "pass",
+              "description": "chat_action_graph.json deleted after build"
+            },
+            {
+              "name": "test_deletes_context_store",
+              "result": "pass",
+              "description": "context-store.json deleted after build"
+            },
+            {
+              "name": "test_both_deleted_together",
+              "result": "pass",
+              "description": "Both suppressed files deleted in one call"
+            },
+            {
+              "name": "test_no_error_when_files_absent",
+              "result": "pass",
+              "description": "No error if files don't exist"
+            },
+            {
+              "name": "test_other_files_not_deleted",
+              "result": "pass",
+              "description": "info_graph.json is not deleted"
+            }
           ]
         },
         {
           "class": "TestTokenise",
           "description": "Keyword tokenisation",
           "tests": [
-            { "name": "test_basic_split",       "result": "pass", "description": "Splits on whitespace into tokens" },
-            { "name": "test_lowercased",        "result": "pass", "description": "All tokens lowercased" },
-            { "name": "test_punctuation_split", "result": "pass", "description": "Splits on / . _ etc." },
-            { "name": "test_empty_string",      "result": "pass", "description": "Empty string returns empty set" }
+            {
+              "name": "test_basic_split",
+              "result": "pass",
+              "description": "Splits on whitespace into tokens"
+            },
+            {
+              "name": "test_lowercased",
+              "result": "pass",
+              "description": "All tokens lowercased"
+            },
+            {
+              "name": "test_punctuation_split",
+              "result": "pass",
+              "description": "Splits on / . _ etc."
+            },
+            {
+              "name": "test_empty_string",
+              "result": "pass",
+              "description": "Empty string returns empty set"
+            }
           ]
         },
         {
           "class": "TestExtractRelevantFiles",
           "description": "File scoring, ranking, disk reads, schema variants",
           "tests": [
-            { "name": "test_auth_file_ranks_first_for_auth_query",       "result": "pass", "description": "auth middleware file ranks #1 for auth query" },
-            { "name": "test_score_is_non_negative",                      "result": "pass", "description": "All scores ≥ 0" },
-            { "name": "test_higher_overlap_higher_score",                "result": "pass", "description": "Higher keyword overlap → higher score" },
-            { "name": "test_history_contributes_to_scoring",             "result": "pass", "description": "Session history boosts file scores" },
-            { "name": "test_top_n_respected",                            "result": "pass", "description": "top_n=5 returns ≤ 5 files" },
-            { "name": "test_zero_top_n_returns_empty",                   "result": "pass", "description": "top_n=0 returns empty list" },
-            { "name": "test_empty_graph_files_returns_empty",            "result": "pass", "description": "Empty graph → empty list" },
-            { "name": "test_result_has_required_keys",                   "result": "pass", "description": "Every result has path, score, content" },
-            { "name": "test_content_read_from_disk",                     "result": "pass", "description": "File content read correctly from disk" },
-            { "name": "test_missing_file_content_is_empty_or_error_string","result": "pass","description": "Missing files don't crash; content is string" },
-            { "name": "test_content_truncated_at_3000_chars",            "result": "pass", "description": "Content capped at 3,000 chars" },
-            { "name": "test_truncation_note_appended",                   "result": "pass", "description": "'truncated' note added when file is cut" },
-            { "name": "test_nodes_key_fallback",                         "result": "pass", "description": "'nodes' key used when 'files' absent" },
-            { "name": "test_file_key_in_node",                           "result": "pass", "description": "'file' key in node used as path fallback" }
+            {
+              "name": "test_auth_file_ranks_first_for_auth_query",
+              "result": "pass",
+              "description": "auth middleware file ranks #1 for auth query"
+            },
+            {
+              "name": "test_score_is_non_negative",
+              "result": "pass",
+              "description": "All scores \u2265 0"
+            },
+            {
+              "name": "test_higher_overlap_higher_score",
+              "result": "pass",
+              "description": "Higher keyword overlap \u2192 higher score"
+            },
+            {
+              "name": "test_history_contributes_to_scoring",
+              "result": "pass",
+              "description": "Session history boosts file scores"
+            },
+            {
+              "name": "test_top_n_respected",
+              "result": "pass",
+              "description": "top_n=5 returns \u2264 5 files"
+            },
+            {
+              "name": "test_zero_top_n_returns_empty",
+              "result": "pass",
+              "description": "top_n=0 returns empty list"
+            },
+            {
+              "name": "test_empty_graph_files_returns_empty",
+              "result": "pass",
+              "description": "Empty graph \u2192 empty list"
+            },
+            {
+              "name": "test_result_has_required_keys",
+              "result": "pass",
+              "description": "Every result has path, score, content"
+            },
+            {
+              "name": "test_content_read_from_disk",
+              "result": "pass",
+              "description": "File content read correctly from disk"
+            },
+            {
+              "name": "test_missing_file_content_is_empty_or_error_string",
+              "result": "pass",
+              "description": "Missing files don't crash; content is string"
+            },
+            {
+              "name": "test_content_truncated_at_3000_chars",
+              "result": "pass",
+              "description": "Content capped at 3,000 chars"
+            },
+            {
+              "name": "test_truncation_note_appended",
+              "result": "pass",
+              "description": "'truncated' note added when file is cut"
+            },
+            {
+              "name": "test_nodes_key_fallback",
+              "result": "pass",
+              "description": "'nodes' key used when 'files' absent"
+            },
+            {
+              "name": "test_file_key_in_node",
+              "result": "pass",
+              "description": "'file' key in node used as path fallback"
+            }
+          ]
+        },
+        {
+          "class": "TestInfoGraphSchema",
+          "description": "info_graph.json conformance against the committed fixture (docs/info_graph-schema.md)",
+          "tests": [
+            {
+              "name": "test_top_level_keys",
+              "result": "pass",
+              "description": "Exactly root/node_count/edge_count/file_count/symbol_count/nodes/edges"
+            },
+            {
+              "name": "test_counts_match_lists",
+              "result": "pass",
+              "description": "*_count fields match the nodes/edges list lengths and kind split"
+            },
+            {
+              "name": "test_single_node_list_no_files_key",
+              "result": "pass",
+              "description": "One mixed 'nodes' list; no 'files'/'file_nodes' key"
+            },
+            {
+              "name": "test_only_file_and_symbol_kinds",
+              "result": "pass",
+              "description": "Every node kind is 'file' or 'symbol'"
+            },
+            {
+              "name": "test_file_node_fields",
+              "result": "pass",
+              "description": "File node has the 9 documented fields, no symbols/exports"
+            },
+            {
+              "name": "test_symbol_node_fields",
+              "result": "pass",
+              "description": "Symbol node has the 13 documented fields, no content; path points at a real file node"
+            },
+            {
+              "name": "test_edge_shape_and_rels",
+              "result": "pass",
+              "description": "Edges are {from,to,rel}; rel in {imports,contains}"
+            },
+            {
+              "name": "test_contains_edges_link_file_to_symbol",
+              "result": "pass",
+              "description": "'contains' edges go file id -> 'file::name' symbol id"
+            },
+            {
+              "name": "test_import_targets_are_not_resolved_to_node_ids",
+              "result": "pass",
+              "description": "'imports' targets are raw tokens (e.g. 'hashlib'), not node ids"
+            }
+          ]
+        }
+      ],
+      "note": "Phase 1: TestExtractRelevantFiles now uses the real graperoot schema; legacy shapes -> TestLegacyGraphAdapter; +graph-expansion / with_signals cases. See REPORT.md."
+    },
+    {
+      "module": "tests.test_scoring",
+      "file": "tests/test_scoring.py",
+      "description": "Composable scorer \u2014 tokeniser, BM25 index, signal/propagator registry, ranking",
+      "total": 24,
+      "passed": 24,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.01,
+      "classes": [
+        {
+          "class": "TestTokenize",
+          "description": "camelCase/snake/path split, stopwords, stemming",
+          "tests": [
+            {
+              "name": "test_camel_case_split",
+              "result": "pass"
+            },
+            {
+              "name": "test_snake_and_path_split",
+              "result": "pass"
+            },
+            {
+              "name": "test_stopwords_and_extensions_dropped",
+              "result": "pass"
+            },
+            {
+              "name": "test_preserves_term_frequency",
+              "result": "pass"
+            },
+            {
+              "name": "test_stem_collapses_inflections",
+              "result": "pass"
+            },
+            {
+              "name": "test_short_tokens_not_stemmed",
+              "result": "pass"
+            }
+          ]
+        },
+        {
+          "class": "TestBm25Index",
+          "description": "IDF, prefix / stem-family expansion",
+          "tests": [
+            {
+              "name": "test_rarer_term_scores_higher",
+              "result": "pass"
+            },
+            {
+              "name": "test_prefix_expansion_matches_longer_term",
+              "result": "pass"
+            },
+            {
+              "name": "test_exact_hit_beats_prefix_hit",
+              "result": "pass"
+            },
+            {
+              "name": "test_unknown_terms_dropped",
+              "result": "pass"
+            }
+          ]
+        },
+        {
+          "class": "TestScoreDocuments",
+          "description": "ranking, weighting, registry composability",
+          "tests": [
+            {
+              "name": "test_ranks_relevant_doc_first",
+              "result": "pass"
+            },
+            {
+              "name": "test_semantic_hit_beats_lexical_prefix_decoy",
+              "result": "pass",
+              "description": "1.3 done-when gate"
+            },
+            {
+              "name": "test_history_weighted_below_query",
+              "result": "pass"
+            },
+            {
+              "name": "test_total_is_sum_of_weighted_signals",
+              "result": "pass"
+            },
+            {
+              "name": "test_zero_weight_skips_signal",
+              "result": "pass"
+            },
+            {
+              "name": "test_deterministic_tie_break_on_path",
+              "result": "pass"
+            },
+            {
+              "name": "test_new_signal_via_registry_only",
+              "result": "pass",
+              "description": "1.1 done-when gate"
+            },
+            {
+              "name": "test_default_signals_registered",
+              "result": "pass"
+            }
+          ]
+        },
+        {
+          "class": "TestImportGraphExpansion",
+          "description": "import-edge propagator",
+          "tests": [
+            {
+              "name": "test_callee_surfaces_from_caller_only_query",
+              "result": "pass",
+              "description": "1.4 done-when gate"
+            },
+            {
+              "name": "test_hop_count_is_configurable",
+              "result": "pass",
+              "description": "1.4 done-when gate"
+            },
+            {
+              "name": "test_hops_zero_disables_expansion",
+              "result": "pass"
+            },
+            {
+              "name": "test_no_edges_no_boost",
+              "result": "pass"
+            },
+            {
+              "name": "test_dotted_module_target_resolves",
+              "result": "pass"
+            },
+            {
+              "name": "test_import_graph_is_default_propagator",
+              "result": "pass"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "tests.test_gitsignals",
+      "file": "tests/test_gitsignals.py",
+      "description": "Local-git relevance signal \u2014 temp `git init` repos",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 6.4,
+      "classes": [
+        {
+          "class": "TestOutsideRepo",
+          "description": "graceful degradation",
+          "tests": [
+            {
+              "name": "test_non_repo_returns_none",
+              "result": "pass"
+            },
+            {
+              "name": "test_signal_is_zero_without_context",
+              "result": "pass"
+            }
+          ]
+        },
+        {
+          "class": "TestInsideRepo",
+          "description": "real repo: changed / recent / co-change",
+          "tests": [
+            {
+              "name": "test_collects_recent_history",
+              "result": "pass"
+            },
+            {
+              "name": "test_uncommitted_change_scores_highest",
+              "result": "pass"
+            },
+            {
+              "name": "test_ranking_uses_git_when_available",
+              "result": "pass"
+            },
+            {
+              "name": "test_cochange_with_dirty_file",
+              "result": "pass"
+            }
           ]
         }
       ]
@@ -213,9 +775,9 @@
     {
       "module": "tests.test_cli",
       "file": "tests/test_cli.py",
-      "description": "CLI integration — argument parsing, payload assembly, mocked pipeline",
-      "total": 28,
-      "passed": 28,
+      "description": "CLI integration \u2014 argument parsing, payload assembly, mocked pipeline",
+      "total": 37,
+      "passed": 37,
       "failed": 0,
       "errors": 0,
       "skipped": 0,
@@ -225,60 +787,173 @@
           "class": "TestArgParser",
           "description": "Argument parser flags and validation",
           "tests": [
-            { "name": "test_query_required",      "result": "pass", "description": "Missing query exits with error" },
-            { "name": "test_query_positional",    "result": "pass", "description": "Query captured as positional argument" },
-            { "name": "test_project_flag",        "result": "pass", "description": "--project flag accepted" },
-            { "name": "test_project_short_flag",  "result": "pass", "description": "-p short form accepted" },
-            { "name": "test_top_n_default_is_10", "result": "pass", "description": "--top-n defaults to 10" },
-            { "name": "test_top_n_custom",        "result": "pass", "description": "--top-n custom value accepted" },
-            { "name": "test_top_n_short",         "result": "pass", "description": "-n short form accepted" },
-            { "name": "test_verbose_default_false","result": "pass", "description": "--verbose is off by default" },
-            { "name": "test_verbose_flag",        "result": "pass", "description": "--verbose enables verbose mode" },
-            { "name": "test_verbose_short_flag",  "result": "pass", "description": "-v short form accepted" },
-            { "name": "test_graph_out_flag",      "result": "pass", "description": "--graph-out flag accepted" },
-            { "name": "test_version_exits",       "result": "pass", "description": "--version exits with code 0" }
+            {
+              "name": "test_query_required",
+              "result": "pass",
+              "description": "Missing query exits with error"
+            },
+            {
+              "name": "test_query_positional",
+              "result": "pass",
+              "description": "Query captured as positional argument"
+            },
+            {
+              "name": "test_project_flag",
+              "result": "pass",
+              "description": "--project flag accepted"
+            },
+            {
+              "name": "test_project_short_flag",
+              "result": "pass",
+              "description": "-p short form accepted"
+            },
+            {
+              "name": "test_top_n_default_is_10",
+              "result": "pass",
+              "description": "--top-n defaults to 10"
+            },
+            {
+              "name": "test_top_n_custom",
+              "result": "pass",
+              "description": "--top-n custom value accepted"
+            },
+            {
+              "name": "test_top_n_short",
+              "result": "pass",
+              "description": "-n short form accepted"
+            },
+            {
+              "name": "test_verbose_default_false",
+              "result": "pass",
+              "description": "--verbose is off by default"
+            },
+            {
+              "name": "test_verbose_flag",
+              "result": "pass",
+              "description": "--verbose enables verbose mode"
+            },
+            {
+              "name": "test_verbose_short_flag",
+              "result": "pass",
+              "description": "-v short form accepted"
+            },
+            {
+              "name": "test_graph_out_flag",
+              "result": "pass",
+              "description": "--graph-out flag accepted"
+            },
+            {
+              "name": "test_version_exits",
+              "result": "pass",
+              "description": "--version exits with code 0"
+            }
           ]
         },
         {
           "class": "TestPayloadHelpers",
           "description": "_format_code_chunks and _build_payload",
           "tests": [
-            { "name": "test_format_code_chunks_empty",           "result": "pass", "description": "Empty files list shows fallback message" },
-            { "name": "test_format_code_chunks_one_file",        "result": "pass", "description": "Single file path and content in output" },
-            { "name": "test_format_code_chunks_multiple_files",  "result": "pass", "description": "Multiple files all present in output" },
-            { "name": "test_build_payload_sections_present",     "result": "pass", "description": "All three section headers present" },
-            { "name": "test_build_payload_query_in_output",      "result": "pass", "description": "User query appears in payload" },
-            { "name": "test_build_payload_empty_history_fallback","result": "pass", "description": "Empty history shows 'no session history found'" },
-            { "name": "test_build_payload_history_in_output",    "result": "pass", "description": "Non-empty history appears in payload" }
+            {
+              "name": "test_format_code_chunks_empty",
+              "result": "pass",
+              "description": "Empty files list shows fallback message"
+            },
+            {
+              "name": "test_format_code_chunks_one_file",
+              "result": "pass",
+              "description": "Single file path and content in output"
+            },
+            {
+              "name": "test_format_code_chunks_multiple_files",
+              "result": "pass",
+              "description": "Multiple files all present in output"
+            },
+            {
+              "name": "test_build_payload_sections_present",
+              "result": "pass",
+              "description": "All three section headers present"
+            },
+            {
+              "name": "test_build_payload_query_in_output",
+              "result": "pass",
+              "description": "User query appears in payload"
+            },
+            {
+              "name": "test_build_payload_empty_history_fallback",
+              "result": "pass",
+              "description": "Empty history shows 'no session history found'"
+            },
+            {
+              "name": "test_build_payload_history_in_output",
+              "result": "pass",
+              "description": "Non-empty history appears in payload"
+            }
           ]
         },
         {
           "class": "TestCLIErrors",
           "description": "Error paths and exit codes",
           "tests": [
-            { "name": "test_invalid_project_path_exits_1",  "result": "pass", "description": "Non-existent --project exits 1" },
-            { "name": "test_graperoot_missing_exits_1",     "result": "pass", "description": "Missing graperoot exits 1 with clear message" },
-            { "name": "test_graph_build_failure_exits_1",   "result": "pass", "description": "RuntimeError from build_graph exits 1" }
+            {
+              "name": "test_invalid_project_path_exits_1",
+              "result": "pass",
+              "description": "Non-existent --project exits 1"
+            },
+            {
+              "name": "test_graperoot_missing_exits_1",
+              "result": "pass",
+              "description": "Missing graperoot exits 1 with clear message"
+            },
+            {
+              "name": "test_graph_build_failure_exits_1",
+              "result": "pass",
+              "description": "RuntimeError from build_graph exits 1"
+            }
           ]
         },
         {
           "class": "TestCLISuccess",
           "description": "Success path via mocked pipeline",
           "tests": [
-            { "name": "test_exit_code_0_on_success",               "result": "pass", "description": "Clean run exits 0" },
-            { "name": "test_stdout_contains_all_three_sections",   "result": "pass", "description": "All three section headers in stdout" },
-            { "name": "test_query_appears_in_user_request_section","result": "pass", "description": "Query string in USER REQUEST section" },
-            { "name": "test_no_session_history_shows_fallback",    "result": "pass", "description": "No history → fallback message shown" },
-            { "name": "test_top_n_limits_files_in_output",         "result": "pass", "description": "--top-n=1 limits file separators" },
-            { "name": "test_default_graph_out_under_dual_graph",   "result": "pass", "description": "Default graph-out is .dual-graph/info_graph.json" }
+            {
+              "name": "test_exit_code_0_on_success",
+              "result": "pass",
+              "description": "Clean run exits 0"
+            },
+            {
+              "name": "test_stdout_contains_all_three_sections",
+              "result": "pass",
+              "description": "All three section headers in stdout"
+            },
+            {
+              "name": "test_query_appears_in_user_request_section",
+              "result": "pass",
+              "description": "Query string in USER REQUEST section"
+            },
+            {
+              "name": "test_no_session_history_shows_fallback",
+              "result": "pass",
+              "description": "No history \u2192 fallback message shown"
+            },
+            {
+              "name": "test_top_n_limits_files_in_output",
+              "result": "pass",
+              "description": "--top-n=1 limits file separators"
+            },
+            {
+              "name": "test_default_graph_out_under_dual_graph",
+              "result": "pass",
+              "description": "Default graph-out is .dual-graph/info_graph.json"
+            }
           ]
         }
-      ]
+      ],
+      "note": "Phase 1: +--explain/--graph-hops/--no-git parsing, _explain_lines, byte-identical-stdout integration check. See REPORT.md."
     },
     {
       "module": "tests.test_e2e",
       "file": "tests/test_e2e.py",
-      "description": "End-to-end pipeline tests — real graperoot scan against temp project",
+      "description": "End-to-end pipeline tests \u2014 real graperoot scan against temp project",
       "total": 17,
       "passed": 16,
       "failed": 0,
@@ -290,28 +965,92 @@
           "class": "TestE2EBasic",
           "description": "Basic invocation checks (no scan required)",
           "tests": [
-            { "name": "test_help_exits_0",              "result": "pass",    "description": "--help prints usage and exits 0" },
-            { "name": "test_version_exits_0",           "result": "pass",    "description": "--version prints 1.0.0 and exits 0" },
-            { "name": "test_missing_query_exits_nonzero","result": "pass",   "description": "No query argument exits non-zero" },
-            { "name": "test_invalid_project_exits_1",   "result": "pass",   "description": "Non-existent project exits 1" },
-            { "name": "test_no_traceback_on_bad_project","result": "pass",  "description": "No Traceback on stderr for bad project" }
+            {
+              "name": "test_help_exits_0",
+              "result": "pass",
+              "description": "--help prints usage and exits 0"
+            },
+            {
+              "name": "test_version_exits_0",
+              "result": "pass",
+              "description": "--version prints 1.0.0 and exits 0"
+            },
+            {
+              "name": "test_missing_query_exits_nonzero",
+              "result": "pass",
+              "description": "No query argument exits non-zero"
+            },
+            {
+              "name": "test_invalid_project_exits_1",
+              "result": "pass",
+              "description": "Non-existent project exits 1"
+            },
+            {
+              "name": "test_no_traceback_on_bad_project",
+              "result": "pass",
+              "description": "No Traceback on stderr for bad project"
+            }
           ]
         },
         {
           "class": "TestE2EPipeline",
           "description": "Full pipeline with real graperoot scan",
           "tests": [
-            { "name": "test_exit_code_0",                    "result": "pass", "description": "Full pipeline exits 0" },
-            { "name": "test_three_section_headers_present",  "result": "pass", "description": "All 3 section headers in output" },
-            { "name": "test_query_in_user_request_section",  "result": "pass", "description": "Query text in USER REQUEST section" },
-            { "name": "test_payload_within_token_budget",    "result": "pass", "description": "Payload ≤ 80,000 chars (~20k tokens)" },
-            { "name": "test_no_traceback_on_success",        "result": "pass", "description": "No Traceback in stderr on success" },
-            { "name": "test_stderr_lines_are_link_prefixed", "result": "pass", "description": "All stderr lines start with [link]" },
-            { "name": "test_chat_action_graph_suppressed",   "result": "pass", "description": "chat_action_graph.json absent after run" },
-            { "name": "test_graph_file_created",             "result": "pass", "description": "info_graph.json created at --graph-out" },
-            { "name": "test_graph_file_valid_json",          "result": "pass", "description": "info_graph.json is valid parseable JSON" },
-            { "name": "test_relevant_auth_file_in_context",  "result": "pass", "description": "Auth-related file surfaces for auth query" },
-            { "name": "test_top_n_flag_limits_files",        "result": "pass", "description": "--top-n=1 produces fewer files than --top-n=5" }
+            {
+              "name": "test_exit_code_0",
+              "result": "pass",
+              "description": "Full pipeline exits 0"
+            },
+            {
+              "name": "test_three_section_headers_present",
+              "result": "pass",
+              "description": "All 3 section headers in output"
+            },
+            {
+              "name": "test_query_in_user_request_section",
+              "result": "pass",
+              "description": "Query text in USER REQUEST section"
+            },
+            {
+              "name": "test_payload_within_token_budget",
+              "result": "pass",
+              "description": "Payload \u2264 80,000 chars (~20k tokens)"
+            },
+            {
+              "name": "test_no_traceback_on_success",
+              "result": "pass",
+              "description": "No Traceback in stderr on success"
+            },
+            {
+              "name": "test_stderr_lines_are_link_prefixed",
+              "result": "pass",
+              "description": "All stderr lines start with [link]"
+            },
+            {
+              "name": "test_chat_action_graph_suppressed",
+              "result": "pass",
+              "description": "chat_action_graph.json absent after run"
+            },
+            {
+              "name": "test_graph_file_created",
+              "result": "pass",
+              "description": "info_graph.json created at --graph-out"
+            },
+            {
+              "name": "test_graph_file_valid_json",
+              "result": "pass",
+              "description": "info_graph.json is valid parseable JSON"
+            },
+            {
+              "name": "test_relevant_auth_file_in_context",
+              "result": "pass",
+              "description": "Auth-related file surfaces for auth query"
+            },
+            {
+              "name": "test_top_n_flag_limits_files",
+              "result": "pass",
+              "description": "--top-n=1 produces fewer files than --top-n=5"
+            }
           ]
         },
         {
@@ -321,7 +1060,7 @@
             {
               "name": "test_full_workspace_pipeline",
               "result": "skipped",
-              "description": "Full 1800-file workspace scan — enable with THE_LINK_RUN_FULL_E2E=1",
+              "description": "Full 1800-file workspace scan \u2014 enable with THE_LINK_RUN_FULL_E2E=1",
               "skip_reason": "Set THE_LINK_RUN_FULL_E2E=1 to run the full workspace scan test"
             }
           ]

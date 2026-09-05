@@ -51,6 +51,11 @@ logging.basicConfig(stream=sys.stderr, format=_LOG_FORMAT, level=logging.WARNING
 logger = logging.getLogger("link")
 
 
+def _eprint(msg: str = "") -> None:
+    """One calm-tech stderr line, always ``[link]``-prefixed."""
+    print(f"[link] {msg}" if msg else "[link]", file=sys.stderr)
+
+
 # ── Payload assembly ─────────────────────────────────────────────────────────
 
 def _format_code_chunks(files: list[dict]) -> str:
@@ -58,6 +63,41 @@ def _format_code_chunks(files: list[dict]) -> str:
         return "(no relevant files found)"
     parts = [f"--- {f.get('path', 'unknown')} ---\n{f.get('content', '')}" for f in files]
     return "\n\n".join(parts)
+
+
+def _explain_lines(files: list[dict]) -> list[str]:
+    """Render the ranking as plain text rows (no ``[link]`` prefix — caller adds it).
+
+    Each file dict is expected to carry a ``signals`` breakdown (from
+    ``extract_relevant_files(..., with_signals=True)``).
+    """
+    if not files:
+        return ["explain: no files ranked"]
+
+    signal_names: list[str] = []
+    for f in files:
+        for name in f.get("signals", {}):
+            if name not in signal_names:
+                signal_names.append(name)
+
+    header = ["#", "score", *signal_names, "path"]
+    rows: list[list[str]] = [header]
+    for i, f in enumerate(files, 1):
+        sig = f.get("signals", {})
+        rows.append([
+            str(i),
+            f"{f.get('score', 0.0):.2f}",
+            *[f"{sig.get(n, 0.0):.2f}" for n in signal_names],
+            str(f.get("path", "?")),
+        ])
+
+    widths = [max(len(r[c]) for r in rows) for c in range(len(header))]
+    out = [f"explain: {len(files)} file(s) ranked (signals: {', '.join(signal_names)})"]
+    for r in rows:
+        cells = [r[c].rjust(widths[c]) for c in range(len(header) - 1)]
+        cells.append(r[-1])  # path left-aligned, last column
+        out.append("  " + "  ".join(cells))
+    return out
 
 
 def _build_payload(query: str, history: str, code_chunks: str) -> str:
@@ -106,8 +146,22 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Number of relevant files to include in context (default: 10).",
     )
     p.add_argument(
+        "--graph-hops", type=int, default=2, dest="graph_hops",
+        help="Import-edge hops to expand from a seed file when ranking "
+             "(0 disables graph expansion; default: 2).",
+    )
+    p.add_argument(
+        "--no-git", action="store_true", default=False, dest="no_git",
+        help="Do not fold local git history / working-tree state into ranking.",
+    )
+    p.add_argument(
         "--verbose", "-v", action="store_true", default=False,
         help="Emit detailed operational logs to stderr.",
+    )
+    p.add_argument(
+        "--explain", "-e", action="store_true", default=False,
+        help="Print the file ranking and per-signal score breakdown to stderr. "
+             "Does not change the stdout payload.",
     )
     p.add_argument(
         "--version", action="version",
@@ -168,8 +222,15 @@ def main(argv: list[str] | None = None) -> int:
         history=compressed_history,
         top_n=args.top_n,
         project_path=project_path,
+        graph_hops=args.graph_hops,
+        use_git=not args.no_git,
+        with_signals=args.explain,
     )
     logger.info("map: %d file(s) extracted", len(relevant_files))
+
+    if args.explain:
+        for line in _explain_lines(relevant_files):
+            _eprint(line)
 
     # ── Step 4: Compile ───────────────────────────────────────────────────────
     logger.info("compile: assembling payload")

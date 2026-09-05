@@ -14,18 +14,17 @@
 """
 GrapeRoot semantic graph wrapper for The Link.
 
-Provides two public functions:
-
     build_graph(project_path, out_path) -> dict
         Builds / refreshes info_graph.json via graperoot.graph_builder.
         Raises ImportError with install instructions if graperoot is absent.
         Suppresses chat_action_graph.json and context-store.json side-effects.
 
     extract_relevant_files(graph, query, history, top_n=10) -> list[dict]
-        Scores graph file nodes by keyword overlap and returns the top-N
-        files with their literal code content read from disk.
+        Normalises the graph into scoring documents, ranks them with the
+        composable scorer in ``thelink.scoring``, and returns the top-N files
+        with their literal code content read from disk.
 
-graperoot is invoked via its Python module — no shell-outs to .sh launchers.
+The graph schema this consumes is documented in docs/info_graph-schema.md.
 """
 from __future__ import annotations
 
@@ -37,9 +36,15 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from thelink.scoring import (
+    DEFAULT_SIGNALS, FileDoc, ScoreContext, score_documents, tokenize,
+)
+from thelink.gitsignals import collect_git_context  # registers the "git" signal
+
 logger = logging.getLogger("link.graph")
 
 _SUPPRESS = ("chat_action_graph.json", "context-store.json")
+_MAX_FILE_CHARS = 3_000
 
 
 def _check_graperoot() -> None:
@@ -125,12 +130,117 @@ def build_graph(project_path: Path, out_path: Path) -> dict[str, Any]:
     return graph
 
 
+# ── Legacy tokeniser ────────────────────────────────────────────────────────
+# Retained for callers/tests that want the pre-1.1 set-of-tokens behaviour.
+# Scoring itself uses thelink.scoring.tokenize (camelCase-aware, stemmed).
+
 _TOKEN_RE = re.compile(r"[a-zA-Z0-9_]+")
-_MAX_FILE_CHARS = 3_000
 
 
 def _tokenise(text: str) -> set[str]:
     return {t.lower() for t in _TOKEN_RE.findall(text)}
+
+
+# ── Graph → scoring documents ───────────────────────────────────────────────
+# Two input shapes are accepted:
+#   * real graperoot output — one "nodes" list whose entries carry a "kind"
+#     ("file" | "symbol") plus an "edges" list. This is the only shape a live
+#     graperoot install produces (see docs/info_graph-schema.md).
+#   * legacy/synthetic — a bare list under "files" / "nodes" / "file_nodes"
+#     whose entries have "path"/"file"/"name" and optional "symbols"/"exports".
+#     Used by unit-test fixtures and any non-graperoot graph source.
+
+def _is_real_schema(graph: dict) -> bool:
+    nodes = graph.get("nodes")
+    return isinstance(nodes, list) and any(
+        isinstance(n, dict) and "kind" in n for n in nodes
+    )
+
+
+def _docs_from_real_schema(graph: dict) -> list[FileDoc]:
+    nodes = graph["nodes"]
+
+    # Fold each file's child symbols (names + mined keywords) back onto the file.
+    sym_by_path: dict[str, list[str]] = {}
+    for n in nodes:
+        if not isinstance(n, dict) or n.get("kind") != "symbol":
+            continue
+        bucket = sym_by_path.setdefault(str(n.get("path", "")), [])
+        if n.get("name"):
+            bucket.append(str(n["name"]))
+        bucket.extend(str(k) for k in (n.get("keywords") or []))
+
+    docs: list[FileDoc] = []
+    for n in nodes:
+        if not isinstance(n, dict) or n.get("kind") != "file":
+            continue
+        path = str(n.get("path", ""))
+        docs.append(FileDoc(
+            path=path,
+            fields={
+                "path": tokenize(path),
+                "symbols": tokenize(" ".join(sym_by_path.get(path, ()))),
+                "keywords": tokenize(" ".join(str(k) for k in (n.get("keywords") or []))),
+                "summary": tokenize(str(n.get("summary", "") or "")),
+            },
+            raw=n,
+        ))
+    return docs
+
+
+def _docs_from_legacy_schema(graph: dict) -> list[FileDoc]:
+    nodes = None
+    for key in ("files", "nodes", "file_nodes"):
+        value = graph.get(key)
+        if isinstance(value, list):
+            nodes = value
+            break
+    if nodes is None:
+        return []
+
+    docs: list[FileDoc] = []
+    for n in nodes:
+        if not isinstance(n, dict):
+            continue
+        path = str(n.get("path") or n.get("file") or n.get("name") or "")
+        symbols = n.get("symbols") or n.get("exports") or []
+        if not isinstance(symbols, list):
+            symbols = [symbols]
+        docs.append(FileDoc(
+            path=path,
+            fields={
+                "path": tokenize(path),
+                "symbols": tokenize(" ".join(str(s) for s in symbols)),
+                "keywords": tokenize(" ".join(str(k) for k in (n.get("keywords") or []))),
+                "summary": tokenize(str(n.get("summary", "") or "")),
+            },
+            raw=n,
+        ))
+    return docs
+
+
+def _build_file_docs(graph: dict[str, Any]) -> list[FileDoc]:
+    if not isinstance(graph, dict):
+        return []
+    if _is_real_schema(graph):
+        return _docs_from_real_schema(graph)
+    return _docs_from_legacy_schema(graph)
+
+
+def _read_capped(project_path: Path, rel_path: str) -> str:
+    """Read *rel_path* under *project_path*, capped at _MAX_FILE_CHARS."""
+    if not rel_path:
+        return ""
+    abs_path = (project_path / rel_path).resolve()
+    if not abs_path.is_file():
+        return ""
+    try:
+        raw = abs_path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        return f"[unreadable: {exc}]"
+    if len(raw) <= _MAX_FILE_CHARS:
+        return raw
+    return raw[:_MAX_FILE_CHARS] + f"\n... [{len(raw) - _MAX_FILE_CHARS} chars truncated]"
 
 
 def extract_relevant_files(
@@ -139,58 +249,71 @@ def extract_relevant_files(
     history: str,
     top_n: int = 10,
     project_path: Path | None = None,
+    *,
+    graph_hops: int = 2,
+    use_git: bool = True,
+    signals: "list[str] | None" = None,
+    weights: "dict[str, float] | None" = None,
+    with_signals: bool = False,
 ) -> list[dict[str, Any]]:
-    """Return the top-N most relevant files scored against the query + history.
+    """Return the top-N most relevant files, ranked by ``thelink.scoring``.
 
     Args:
-        graph:        Parsed info_graph.json dict from build_graph().
+        graph:        Parsed info_graph.json (real graperoot or legacy shape).
         query:        The user's raw query string.
         history:      Compressed session history from crusher.crush_events().
         top_n:        Maximum number of files to return.
-        project_path: Root path to resolve relative file paths. Defaults to cwd.
+        project_path: Root for resolving relative file paths. Defaults to cwd.
+        graph_hops:   Import-edge hops the graph-expansion pass may walk from a
+                      seed file (0 disables it). Default 2.
+        use_git:      If True (default), fold in local-git relevance signals
+                      when *project_path* is a git repo. Never hits the network.
+        signals:      Explicit signal names to run. Overrides the default set
+                      (bm25, path_hit, + git when available).
+        weights:      Per-signal / per-propagator weight overrides.
+        with_signals: If True, each result carries a ``signals`` breakdown dict.
 
     Returns:
-        List of dicts: ``{"path": str, "score": int, "content": str}``.
+        List of dicts: ``{"path": str, "score": float, "content": str}`` — plus
+        ``"signals": {name: weighted_contribution}`` when *with_signals*.
+        Sorted by score descending, ties broken by path.
     """
     if project_path is None:
         project_path = Path.cwd()
+    project_path = Path(project_path)
 
-    keywords = _tokenise(query + " " + history)
+    docs = _build_file_docs(graph)
+    edges = graph.get("edges") if isinstance(graph, dict) else None
+    ctx = ScoreContext(
+        query=query or "",
+        history=history or "",
+        project_path=project_path,
+        edges=edges if isinstance(edges, list) else [],
+    )
+    ctx.extras["graph_hops"] = int(graph_hops)
 
-    file_nodes: list[dict] = []
-    for key in ("files", "nodes", "file_nodes"):
-        value = graph.get(key)
-        if isinstance(value, list):
-            file_nodes = value
-            break
-    if not file_nodes and isinstance(graph, dict):
-        for v in graph.values():
-            if isinstance(v, dict) and ("path" in v or "file" in v):
-                file_nodes.append(v)
+    active_signals = list(signals) if signals is not None else list(DEFAULT_SIGNALS)
+    if signals is None and use_git:
+        git_ctx = collect_git_context(project_path)
+        if git_ctx:
+            ctx.extras["git"] = git_ctx
+            active_signals.append("git")
+            logger.debug(
+                "git: %d changed, %d on branch, %d recent",
+                len(git_ctx["changed"]), len(git_ctx["branch"]), len(git_ctx["recent"]),
+            )
 
-    scored: list[tuple[int, dict]] = []
-    for node in file_nodes:
-        file_path = node.get("path") or node.get("file") or node.get("name") or ""
-        symbols: list[str] = node.get("symbols") or node.get("exports") or []
-        symbol_text = " ".join(str(s) for s in symbols) if isinstance(symbols, list) else str(symbols)
-        node_tokens = _tokenise(file_path + " " + symbol_text)
-        scored.append((len(keywords & node_tokens), node))
+    ranked = score_documents(docs, ctx, signals=active_signals, weights=weights)
 
-    scored.sort(key=lambda t: (-t[0], str(t[1].get("path") or "")))
-
+    limit = max(int(top_n), 0)
     results: list[dict[str, Any]] = []
-    for score, node in scored[:top_n]:
-        rel_path = node.get("path") or node.get("file") or node.get("name") or ""
-        abs_path = (project_path / rel_path).resolve()
-        content = ""
-        if abs_path.is_file():
-            try:
-                raw = abs_path.read_text(encoding="utf-8", errors="replace")
-                content = raw[:_MAX_FILE_CHARS]
-                if len(raw) > _MAX_FILE_CHARS:
-                    content += f"\n... [{len(raw) - _MAX_FILE_CHARS} chars truncated]"
-            except OSError as exc:
-                content = f"[unreadable: {exc}]"
-        results.append({"path": rel_path, "score": score, "content": content})
-
+    for sd in ranked[:limit]:
+        row: dict[str, Any] = {
+            "path": sd.doc.path,
+            "score": sd.total,
+            "content": _read_capped(project_path, sd.doc.path),
+        }
+        if with_signals:
+            row["signals"] = sd.breakdown()
+        results.append(row)
     return results

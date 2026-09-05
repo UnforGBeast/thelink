@@ -24,7 +24,9 @@ from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from thelink.cli import main, _build_parser, _format_code_chunks, _build_payload
+from thelink.cli import (
+    main, _build_parser, _format_code_chunks, _build_payload, _explain_lines,
+)
 
 
 # ── _build_parser ─────────────────────────────────────────────────────────────
@@ -83,6 +85,15 @@ class TestArgParser(unittest.TestCase):
             self._parse(["--version"])
         self.assertEqual(ctx.exception.code, 0)
 
+    def test_explain_default_false(self):
+        self.assertFalse(self._parse(["q"]).explain)
+
+    def test_explain_flag(self):
+        self.assertTrue(self._parse(["q", "--explain"]).explain)
+
+    def test_explain_short_flag(self):
+        self.assertTrue(self._parse(["q", "-e"]).explain)
+
 
 # ── Payload helpers ───────────────────────────────────────────────────────────
 
@@ -124,6 +135,74 @@ class TestPayloadHelpers(unittest.TestCase):
     def test_build_payload_history_in_output(self):
         payload = _build_payload("q", "past decisions here", "code")
         self.assertIn("past decisions here", payload)
+
+
+# ── --explain rendering ──────────────────────────────────────────────────────
+
+class TestExplainLines(unittest.TestCase):
+
+    def test_empty_files(self):
+        lines = _explain_lines([])
+        self.assertEqual(len(lines), 1)
+        self.assertIn("no files", lines[0])
+
+    def test_header_lists_signal_names(self):
+        files = [
+            {"path": "a.py", "score": 3.5, "signals": {"bm25": 2.0, "path_hit": 1.5}},
+            {"path": "b.py", "score": 0.0, "signals": {"bm25": 0.0, "path_hit": 0.0}},
+        ]
+        lines = _explain_lines(files)
+        self.assertIn("bm25", lines[0])
+        self.assertIn("path_hit", lines[0])
+        # one summary line + header row + one row per file
+        self.assertEqual(len(lines), 1 + 1 + 2)
+        self.assertIn("a.py", lines[-2])
+        self.assertIn("b.py", lines[-1])
+
+    def test_rows_show_per_signal_values(self):
+        files = [{"path": "x.py", "score": 2.0, "signals": {"bm25": 2.0, "path_hit": 0.0}}]
+        body = "\n".join(_explain_lines(files))
+        self.assertIn("2.00", body)
+
+
+class TestExplainIntegration(unittest.TestCase):
+
+    MOCK_GRAPH = {
+        "file_count": 2,
+        "files": [
+            {"path": "src/auth.py", "symbols": ["login", "authenticate"]},
+            {"path": "src/db.py",   "symbols": ["query"]},
+        ],
+    }
+
+    def _run(self, argv, project):
+        out_buf, err_buf = io.StringIO(), io.StringIO()
+        with patch("thelink.cli.build_graph", return_value=self.MOCK_GRAPH), \
+             patch("thelink.cli.read_session_events", return_value=[]), \
+             patch("sys.stdout", out_buf), patch("sys.stderr", err_buf):
+            code = main(argv + ["--project", project])
+        return code, out_buf.getvalue(), err_buf.getvalue()
+
+    def test_stdout_byte_identical_with_and_without_explain(self):
+        with tempfile.TemporaryDirectory() as td:
+            _, out_plain, _ = self._run(["update auth"], td)
+            _, out_explain, err_explain = self._run(["update auth", "--explain"], td)
+            self.assertEqual(out_plain, out_explain)
+            self.assertIn("explain:", err_explain)
+
+    def test_explain_stderr_all_link_prefixed(self):
+        with tempfile.TemporaryDirectory() as td:
+            _, _, err = self._run(["authenticate login", "--explain"], td)
+            for line in err.splitlines():
+                if line.strip():
+                    self.assertTrue(line.startswith("[link]"), repr(line))
+
+    def test_explain_names_the_top_file(self):
+        with tempfile.TemporaryDirectory() as td:
+            _, _, err = self._run(["authenticate login token", "--explain"], td)
+            # auth.py has the matching symbols, so it should head the table
+            first_row = [l for l in err.splitlines() if l.startswith("[link]") and "src/" in l][0]
+            self.assertIn("src/auth.py", first_row)
 
 
 # ── CLI via main() — error paths ──────────────────────────────────────────────
