@@ -1,0 +1,136 @@
+{
+  "root": "<FIXTURE_ROOT>",
+  "node_count": 6,
+  "edge_count": 5,
+  "file_count": 3,
+  "symbol_count": 3,
+  "nodes": [
+    {
+      "id": "README.md",
+      "kind": "file",
+      "path": "README.md",
+      "ext": ".md",
+      "size": 47,
+      "keywords": [],
+      "content": "# Fixture\nSample project for schema capture.\n",
+      "summary": "Sample project for schema capture.",
+      "file_hash": "6b5982cb"
+    },
+    {
+      "id": "src/auth.py",
+      "kind": "file",
+      "path": "src/auth.py",
+      "ext": ".py",
+      "size": 215,
+      "keywords": [
+        "authmiddleware",
+        "auth",
+        "middleware"
+      ],
+      "content": "import hashlib\nfrom src.db import get_user\n\nclass AuthMiddleware:\n    def authenticate(self, token):\n        user = get_user(token)\n        return hashlib.sha256(token.encode()).hexdigest() if user else None\n",
+      "summary": "import hashlib. Contains 1 function: AuthMiddleware.",
+      "file_hash": "ebec5296"
+    },
+    {
+      "id": "src/auth.py::AuthMiddleware",
+      "kind": "symbol",
+      "path": "src/auth.py",
+      "ext": ".py",
+      "size": 4,
+      "keywords": [
+        "authmiddleware",
+        "auth",
+        "middleware"
+      ],
+      "symbol_type": "model",
+      "name": "AuthMiddleware",
+      "line_start": 3,
+      "line_end": 6,
+      "body_hash": "375e3e16",
+      "confidence": "high",
+      "exported": true
+    },
+    {
+      "id": "src/db.py",
+      "kind": "file",
+      "path": "src/db.py",
+      "ext": ".py",
+      "size": 121,
+      "keywords": [
+        "get_user",
+        "get",
+        "user",
+        "save_user",
+        "save"
+      ],
+      "content": "USERS = {}\n\ndef get_user(token):\n    return USERS.get(token)\n\ndef save_user(token, data):\n    USERS[token] = data\n",
+      "summary": "USERS = {}. Contains 2 functions/classes: get_user, save_user.",
+      "file_hash": "7e2ccb6b"
+    },
+    {
+      "id": "src/db.py::get_user",
+      "kind": "symbol",
+      "path": "src/db.py",
+      "ext": ".py",
+      "size": 2,
+      "keywords": [
+        "get_user",
+        "get",
+        "user"
+      ],
+      "symbol_type": "use_case",
+      "name": "get_user",
+      "line_start": 2,
+      "line_end": 3,
+      "body_hash": "aea66440",
+      "confidence": "high",
+      "exported": true
+    },
+    {
+      "id": "src/db.py::save_user",
+      "kind": "symbol",
+      "path": "src/db.py",
+      "ext": ".py",
+      "size": 2,
+      "keywords": [
+        "save_user",
+        "save",
+        "user"
+      ],
+      "symbol_type": "use_case",
+      "name": "save_user",
+      "line_start": 5,
+      "line_end": 6,
+      "body_hash": "a2068ee2",
+      "confidence": "high",
+      "exported": true
+    }
+  ],
+  "edges": [
+    {
+      "from": "src/auth.py",
+      "to": "hashlib",
+      "rel": "imports"
+    },
+    {
+      "from": "src/auth.py",
+      "to": "src.db",
+      "rel": "imports"
+    },
+    {
+      "from": "src/auth.py",
+      "to": "src/auth.py::AuthMiddleware",
+      "rel": "contains"
+    },
+    {
+      "from": "src/db.py",
+      "to": "src/db.py::get_user",
+      "rel": "contains"
+    },
+    {
+      "from": "src/db.py",
+      "to": "src/db.py::save_user",
+      "rel": "contains"
+    }
+  ]
+}
