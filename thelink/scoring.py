@@ -207,6 +207,44 @@ _FIELD_WEIGHTS = {
 _BM25_K1 = 1.5
 _BM25_B = 0.75
 _HISTORY_TERM_WEIGHT = 0.4  # history terms count, but less than the live query
+_EXPANSION_WEIGHT = 0.5     # prefix, stem-family and alias hits, relative to an exact hit
+
+# Developer vocabulary the tokenizer cannot bridge on its own: a query for
+# "auth" should reach login_view.py and session_store.py even though no prefix
+# or stem connects those words. Every group is symmetric, a query member
+# reaches each other member that exists in the corpus, at the same weight as
+# a prefix hit. Deliberately small and generic; framework or domain jargon
+# belongs in the query, not here. Entries are stemmed at import time so they
+# match corpus tokens, which are stemmed too.
+_ALIAS_GROUPS: tuple[frozenset[str], ...] = (
+    frozenset({"auth", "authentication", "authenticate", "authorization", "login",
+               "logout", "session", "credential", "password", "oauth", "jwt", "token"}),
+    frozenset({"db", "database", "sql", "query", "repository", "orm", "migration", "schema"}),
+    frozenset({"api", "endpoint", "route", "router", "handler", "controller", "rest", "http"}),
+    frozenset({"config", "configuration", "settings", "env", "environment", "option"}),
+    frozenset({"ui", "view", "component", "screen", "page", "widget", "template"}),
+    frozenset({"log", "logger", "logging", "trace", "debug"}),
+    frozenset({"cache", "memo", "memoize", "redis"}),
+    frozenset({"queue", "job", "worker", "task", "scheduler", "cron"}),
+    frozenset({"payment", "billing", "invoice", "charge", "checkout", "subscription"}),
+    frozenset({"user", "account", "profile", "member"}),
+    frozenset({"error", "exception", "failure", "fault"}),
+    frozenset({"file", "upload", "download", "storage", "blob"}),
+    frozenset({"mail", "email", "smtp", "notification"}),
+    frozenset({"cli", "command", "argparse", "terminal", "console"}),
+)
+
+
+def _build_alias_map(groups: Iterable[frozenset[str]]) -> dict[str, frozenset[str]]:
+    aliases: dict[str, set[str]] = {}
+    for group in groups:
+        stemmed = {_stem(word.lower()) for word in group}
+        for word in stemmed:
+            aliases.setdefault(word, set()).update(stemmed - {word})
+    return {word: frozenset(peers) for word, peers in aliases.items()}
+
+
+_ALIASES = _build_alias_map(_ALIAS_GROUPS)
 
 
 @dataclass
@@ -250,23 +288,35 @@ class _Bm25Index:
         - Stem-family hit: query term and vocab term share a prefix of ≥ 5 and
           differ only in a short (≤ 3 char) suffix, e.g. ``authentication`` ↔
           ``authenticate`` → weight 0.5.
-        Unknown terms are dropped.
+        - Alias hit: another member of the term's ``_ALIAS_GROUPS`` group,
+          e.g. ``auth`` → ``login``, ``session`` → weight 0.5.
+
+        An exact hit does not stop the other expansions: ``auth`` in the
+        corpus still reaches ``authentication``. A vocab term reached more
+        than once keeps its best weight only. Unknown terms are dropped.
         """
-        out: list[tuple[str, float]] = []
+        weights: dict[str, float] = {}
+
+        def offer(term: str, weight: float) -> None:
+            if term in self.vocab and weights.get(term, 0.0) < weight:
+                weights[term] = weight
+
         for t in terms:
-            if t in self.vocab:
-                out.append((t, 1.0))
-                continue
+            offer(t, 1.0)
+            for peer in _ALIASES.get(t, ()):
+                offer(peer, _EXPANSION_WEIGHT)
             if len(t) < _MIN_STEM_LEN:
                 continue
             for v in self.vocab:
+                if v == t:
+                    continue
                 if len(v) > len(t) and v.startswith(t):
-                    out.append((v, 0.5))
+                    offer(v, _EXPANSION_WEIGHT)
                     continue
                 cpl = _common_prefix_len(t, v)
                 if cpl >= 5 and (len(t) - cpl) <= 3 and (len(v) - cpl) <= 3:
-                    out.append((v, 0.5))
-        return out
+                    offer(v, _EXPANSION_WEIGHT)
+        return list(weights.items())
 
     def score(self, doc_i: int, weighted_terms: list[tuple[str, float]]) -> float:
         tf = self.doc_tf[doc_i]
