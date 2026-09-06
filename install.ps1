@@ -7,13 +7,24 @@
     What this script does:
       1. Checks for Python 3.10+
       2. Installs pipx if not present  (isolated app manager)
-      3. Installs "the-link" from this local directory via pipx
+      3. Installs "the-link" via pipx: from this checkout when the script sits
+         next to pyproject.toml, otherwise from GitHub (the web install)
       4. Adds pipx Scripts dir to the user PATH if needed
       5. Verifies the link command works
 
 .EXAMPLE
-    Run from the repository root (the directory that contains pyproject.toml):
+    From the web, as in the README (no checkout needed):
+    irm https://raw.githubusercontent.com/UnforGBeast/thelink/main/install.ps1 | iex
+
+.EXAMPLE
+    From the repository root (the directory that contains pyproject.toml):
     .\install.ps1
+
+.NOTES
+    LINK_REPO_URL and LINK_INSTALL_REF select what the web install fetches:
+    the repository (default https://github.com/UnforGBeast/thelink) and the
+    git ref of its source archive (default refs/heads/main; a branch is
+    refs/heads/<name>, a commit is its full SHA).
 #>
 
 $ErrorActionPreference = "Stop"
@@ -26,6 +37,10 @@ if ($MyInvocation.MyCommand.Path) {
 } else {
     $RepoRoot = $PWD.Path
 }
+
+# Web install source (used when no checkout is found next to the script).
+$RepoUrl = if ($env:LINK_REPO_URL) { $env:LINK_REPO_URL.TrimEnd("/") } else { "https://github.com/UnforGBeast/thelink" }
+$InstallRef = if ($env:LINK_INSTALL_REF) { $env:LINK_INSTALL_REF } else { "refs/heads/main" }
 
 $MinMajor = 3
 $MinMinor = 10
@@ -115,11 +130,17 @@ function Invoke-Pipx {
     }
 }
 
-# --- Step 3: Install the-link from local source ---
-Write-Info "Installing The Link from: $RepoRoot"
-
-if (-not (Test-Path (Join-Path $RepoRoot "pyproject.toml"))) {
-    Write-Err "pyproject.toml not found in '$RepoRoot'. Run install.ps1 from the repository root."
+# --- Step 3: Pick the source: local checkout or GitHub archive ---
+# Piped through iex (the README one-liner) the script has no file path and the
+# current directory is wherever the user happens to be, so a checkout is not
+# assumed: without pyproject.toml next to the script, the source archive of
+# the requested ref is fetched from GitHub. No git client is needed for that.
+if (Test-Path (Join-Path $RepoRoot "pyproject.toml")) {
+    $Source = $RepoRoot
+    Write-Info "Installing The Link from local checkout: $RepoRoot"
+} else {
+    $Source = "$RepoUrl/archive/$InstallRef.zip"
+    Write-Info "No local checkout here; installing The Link from $Source"
 }
 
 # Uninstall any prior version so pipx does not attempt an upgrade from PyPI
@@ -131,8 +152,10 @@ try {
     }
 } catch { }
 
-# Install directly from the local directory (no network required)
-Invoke-Pipx @("install", $RepoRoot)
+Invoke-Pipx @("install", $Source)
+if ($LASTEXITCODE -ne 0) {
+    Write-Err "pipx could not install The Link from '$Source' (exit code $LASTEXITCODE)."
+}
 
 # --- Step 4: Ensure pipx Scripts directory is on user PATH ---
 Write-Info "Ensuring 'link' is available on PATH..."

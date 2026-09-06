@@ -156,6 +156,18 @@ cd thelink
 pipx install .
 ```
 
+### A specific branch or commit, without cloning
+
+Both install scripts accept two variables: `LINK_REPO_URL` (default `https://github.com/UnforGBeast/thelink`) and `LINK_INSTALL_REF`, the git ref of the source archive to fetch (`refs/heads/<branch>` or a full commit SHA). No git client is needed.
+
+```bash
+LINK_INSTALL_REF=refs/heads/my-branch bash install.sh
+```
+
+```powershell
+$env:LINK_INSTALL_REF = "refs/heads/my-branch"; irm https://raw.githubusercontent.com/UnforGBeast/thelink/main/install.ps1 | iex
+```
+
 ---
 
 ## Uninstall

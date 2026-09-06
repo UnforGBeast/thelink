@@ -15,7 +15,13 @@
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
-REPO_URL="https://github.com/UnforGBeast/thelink"
+REPO_URL="${LINK_REPO_URL:-https://github.com/UnforGBeast/thelink}"
+REPO_URL="${REPO_URL%/}"
+# Git ref of the source archive used when installing from GitHub. A branch is
+# refs/heads/<name>, a commit is its full SHA. Set LINK_INSTALL_REF to install
+# something other than main; that also skips the PyPI attempt.
+INSTALL_REF="${LINK_INSTALL_REF:-refs/heads/main}"
+ARCHIVE_URL="${REPO_URL}/archive/${INSTALL_REF}.zip"
 MIN_PYTHON_MAJOR=3
 MIN_PYTHON_MINOR=10
 
@@ -79,16 +85,17 @@ info "pipx ready."
 # ── Step 3: Install the-link ──────────────────────────────────────────────────
 info "Installing The Link (this fetches graperoot and all dependencies)..."
 
-# If already installed, upgrade instead of error
-if $PIPX list 2>/dev/null | grep -q "the-link"; then
-  info "Existing installation found — upgrading..."
-  $PIPX upgrade the-link --quiet 2>/dev/null || $PIPX install "$REPO_URL" --force --quiet
-else
-  # Try PyPI first, fall back to direct GitHub install
-  if ! $PIPX install the-link --quiet 2>/dev/null; then
-    info "PyPI package not available — installing from source..."
-    $PIPX install "git+${REPO_URL}.git" --quiet
-  fi
+# A pinned ref always comes from the GitHub source archive (no git client
+# needed). Otherwise PyPI is tried first, then the archive of main.
+if [ -n "${LINK_INSTALL_REF:-}" ]; then
+  info "Installing from ${ARCHIVE_URL}..."
+  $PIPX install "$ARCHIVE_URL" --force --quiet
+elif $PIPX list 2>/dev/null | grep -q "the-link"; then
+  info "Existing installation found, upgrading..."
+  $PIPX upgrade the-link --quiet 2>/dev/null || $PIPX install "$ARCHIVE_URL" --force --quiet
+elif ! $PIPX install the-link --quiet 2>/dev/null; then
+  info "PyPI package not available, installing from ${ARCHIVE_URL}..."
+  $PIPX install "$ARCHIVE_URL" --quiet
 fi
 
 # ── Step 4: Verify ────────────────────────────────────────────────────────────
