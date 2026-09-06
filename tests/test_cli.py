@@ -296,7 +296,8 @@ class TestCLISuccess(unittest.TestCase):
                 return self.MOCK_GRAPH
 
             with patch("thelink.cli.build_graph", side_effect=mock_build), \
-                 patch("thelink.cli.read_session_events", return_value=[]):
+                 patch("thelink.cli.read_session_events", return_value=[]), \
+                 patch("thelink.cli.read_egc_state", return_value=None):
                 main(["query", "--project", td])
 
             self.assertTrue(
