@@ -1,0 +1,20 @@
+The Link
+Copyright 2024 The Link Authors
+
+This product includes software derived from EGC - Extended Global Context
+(https://github.com/Fmarzochi/EGC), Copyright 2026 Felipe Marzochi, licensed
+under the Apache License, Version 2.0:
+
+  - thelink/crusher.py: Python port of mcp/servers/egc-guardian/src/egc-array-crusher.ts
+  - thelink/memory/paths.py: path resolution for the EGC runtime
+
+The NOTICE file of EGC is reproduced below, as required by section 4(d) of
+the Apache License, Version 2.0.
+
+----------------------------------------------------------------------------
+
+EGC - Extended Global Context
+Copyright 2026 Felipe Marzochi
+
+This product includes software developed as part of the EGC project
+(https://github.com/Fmarzochi/EGC).

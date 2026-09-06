@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Token Crusher — Python port of EGC's egc-array-crusher.ts (Apache 2.0).
+# Derived from EGC - Extended Global Context (https://github.com/Fmarzochi/EGC)
+# Copyright 2026 Felipe Marzochi. Licensed under the Apache License, Version 2.0.
+# Python port of mcp/servers/egc-guardian/src/egc-array-crusher.ts; see NOTICE.
 """
 Token Crusher — compresses EGC session events into a compact history string.
 

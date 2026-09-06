@@ -190,6 +190,8 @@ pipx uninstall the-link
 
 ## License
 
-Apache License 2.0. See source files for individual headers.
+Apache License 2.0. See the source files for individual headers and `NOTICE` for third-party attribution.
 
-`graperoot` and `EGC` components retain their original Apache 2.0 licenses.
+Parts of `thelink/crusher.py` and `thelink/memory/paths.py` are derived from [EGC - Extended Global Context](https://github.com/Fmarzochi/EGC), Copyright 2026 Felipe Marzochi, Apache License 2.0.
+
+`graperoot` is a separate package installed from PyPI at install time, distributed by its author under a proprietary license. It is a runtime dependency, not part of this repository, and this license does not cover it.
