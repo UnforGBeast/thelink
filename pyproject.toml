@@ -40,4 +40,4 @@ where = ["."]
 include = ["thelink*"]
 
 [tool.setuptools.package-data]
-thelink = ["py.typed"]
+thelink = ["py.typed", "memory/*.js"]
