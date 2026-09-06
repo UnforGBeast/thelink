@@ -16,6 +16,10 @@ import unittest
 # Allow running as: python -m unittest tests.test_crusher  (from thelink/)
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+# These tests pin the Python port; an egc on PATH would take the reduction
+# over. The passthrough has its own tests in test_crusher_egc.py.
+os.environ["THE_LINK_NO_EGC"] = "1"
+
 from thelink.crusher import (
     _to_key,
     _column_cardinality,

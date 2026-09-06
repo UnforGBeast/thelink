@@ -126,7 +126,7 @@ link "your query"
                         → stdout
 ```
 
-**Temporal memory** comes from EGC's JSONL session store (`~/.gemini/session-data/`). If you use EGC-based tools (Gemini CLI with EGC installed), The Link will find and compress that history automatically. If no history exists, the section is clearly marked as empty.
+**Temporal memory** comes from EGC's JSONL session store (`~/.gemini/session-data/`). If you use EGC-based tools (Gemini CLI with EGC installed), The Link will find and compress that history automatically. If no history exists, the section is clearly marked as empty. The compression itself runs through EGC's own Token Crusher (`egc run`) when the `egc` CLI is on `PATH`, so the savings show up in `egc gain`; otherwise the Python port bundled here does the same work. `THE_LINK_NO_EGC=1` forces the port.
 
 **Spatial memory** comes from GrapeRoot's semantic graph — a dependency graph of your entire codebase with file nodes, symbol exports, and import edges. The graph is built once per project and refreshed when source files change.
 
