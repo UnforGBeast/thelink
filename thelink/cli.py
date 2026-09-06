@@ -23,7 +23,8 @@ Usage:
 
 Pipeline:
     Ingest  → accept query + resolve project path
-    Recall  → read EGC session events → Token Crusher → compressed history
+    Recall  → EGC memory document (via the local EGC install) + session events
+              → Token Crusher → compressed history
     Map     → build GrapeRoot graph → score + extract relevant files
     Compile → assemble and print structured payload to stdout
 
@@ -42,6 +43,7 @@ from pathlib import Path
 # ── Lazy imports (kept at module level for testability) ──────────────────────
 # Imported at module load so tests can patch thelink.cli.build_graph etc.
 from thelink.memory.reader import read_session_events  # noqa: E402
+from thelink.memory.egc_bridge import read_egc_state, format_egc_history  # noqa: E402
 from thelink.crusher import crush_events               # noqa: E402
 from thelink.graph import build_graph, extract_relevant_files  # noqa: E402
 
@@ -100,6 +102,15 @@ def _explain_lines(files: list[dict]) -> list[str]:
     return out
 
 
+def _merge_history(memory: str, events: str) -> str:
+    """EGC's memory document first, compressed session events after it."""
+    memory = (memory or "").strip()
+    events = (events or "").strip()
+    if memory and events:
+        return f"{memory}\n\n[RECENT SESSION EVENTS]\n{events}"
+    return memory or events
+
+
 def _build_payload(query: str, history: str, code_chunks: str) -> str:
     history_section = history.strip() or "(no session history found)"
     return (
@@ -155,6 +166,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Do not fold local git history / working-tree state into ranking.",
     )
     p.add_argument(
+        "--no-egc", action="store_true", default=False, dest="no_egc",
+        help="Do not read the memory document of the local EGC install; "
+             "use JSONL session events only.",
+    )
+    p.add_argument(
         "--verbose", "-v", action="store_true", default=False,
         help="Emit detailed operational logs to stderr.",
     )
@@ -193,6 +209,19 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     # ── Step 2: Recall ────────────────────────────────────────────────────────
+    egc_history = ""
+    if not args.no_egc:
+        logger.info("recall: asking the local EGC install for the memory of %s", project_path)
+        try:
+            egc_history = format_egc_history(read_egc_state(project_path))
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("recall: egc bridge failed: %s", exc)
+            egc_history = ""
+        logger.info(
+            "recall: EGC memory %s",
+            f"{len(egc_history)} chars" if egc_history else "not available",
+        )
+
     logger.info("recall: reading session events from %s", project_path)
     try:
         events = read_session_events(project_path)
@@ -201,8 +230,9 @@ def main(argv: list[str] | None = None) -> int:
         events = []
 
     logger.info("recall: %d events read, crushing...", len(events))
-    compressed_history = crush_events(events)
-    logger.info("recall: compressed to %d chars", len(compressed_history))
+    compressed_events = crush_events(events)
+    logger.info("recall: compressed to %d chars", len(compressed_events))
+    compressed_history = _merge_history(egc_history, compressed_events)
 
     # ── Step 3: Map ───────────────────────────────────────────────────────────
     logger.info("map: building semantic graph for %s", project_path)

@@ -60,6 +60,7 @@ link "Fix the login bug" | Set-Clipboard
 | `--project`, `-p` | current directory | Path to the target repository |
 | `--top-n`, `-n` | `10` | Number of relevant files to include |
 | `--graph-out` | `<project>/.dual-graph/info_graph.json` | Where to write the semantic graph |
+| `--no-egc` | off | Skip the memory document of the local EGC install |
 | `--verbose`, `-v` | off | Show pipeline steps on stderr |
 | `--version` | — | Print version and exit |
 
@@ -71,7 +72,10 @@ The Link writes a structured payload to **stdout**:
 
 ```
 [PROJECT HISTORY]
-<compressed EGC session history — what was decided in past sessions>
+<EGC memory document: context, active decisions, do not repeat, preferences, next session>
+
+[RECENT SESSION EVENTS]
+<compressed session events, when JSONL session files exist>
 
 [RELEVANT CODEBASE CONTEXT]
 --- src/auth/middleware.py ---
@@ -115,8 +119,10 @@ Then paste as your opening message in Bob's chat.
 ```
 link "your query"
        │
-       ├─ Recall   ─── reads ~/.gemini/session-data/*.jsonl (EGC memory)
-       │               Token Crusher compresses history → compressed_history
+       ├─ Recall   ─── asks the local EGC install for the project's memory
+       │               document (decisions, do-not-repeat, preferences, next steps)
+       │               + ~/.gemini/session-data/*.jsonl session events, if any
+       │               Token Crusher compresses the events → compressed_history
        │
        ├─ Map      ─── graperoot.graph_builder.scan(project)
        │               Scores file nodes by keyword overlap with query + history
@@ -126,7 +132,7 @@ link "your query"
                         → stdout
 ```
 
-**Temporal memory** comes from EGC's JSONL session store (`~/.gemini/session-data/`). If you use EGC-based tools (Gemini CLI with EGC installed), The Link will find and compress that history automatically. If no history exists, the section is clearly marked as empty.
+**Temporal memory** comes from EGC. When the `egc` CLI is installed (`npm install -g @egchq/egc`), The Link asks it for the project's memory document: what the project is, the decisions in force, what not to repeat, preferences, and what to pick up next, plus the user-wide lessons EGC keeps across projects. That is the same memory EGC restores for Claude Code, Gemini CLI, Cursor and the other tools it supports, read through EGC's own libraries, decrypted on the fly, never copied anywhere. JSONL session events (`~/.gemini/session-data/`), when present, are compressed by the Token Crusher and appended under `[RECENT SESSION EVENTS]`. If neither exists, the section is clearly marked as empty. `--no-egc` (or `THE_LINK_NO_EGC=1`) skips the EGC memory; `THE_LINK_EGC_PACKAGE=<dir>` pins the EGC package when it is not on `PATH`.
 
 **Spatial memory** comes from GrapeRoot's semantic graph — a dependency graph of your entire codebase with file nodes, symbol exports, and import edges. The graph is built once per project and refreshed when source files change.
 

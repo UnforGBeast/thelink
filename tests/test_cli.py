@@ -179,6 +179,7 @@ class TestExplainIntegration(unittest.TestCase):
         out_buf, err_buf = io.StringIO(), io.StringIO()
         with patch("thelink.cli.build_graph", return_value=self.MOCK_GRAPH), \
              patch("thelink.cli.read_session_events", return_value=[]), \
+             patch("thelink.cli.read_egc_state", return_value=None), \
              patch("sys.stdout", out_buf), patch("sys.stderr", err_buf):
             code = main(argv + ["--project", project])
         return code, out_buf.getvalue(), err_buf.getvalue()
@@ -221,14 +222,16 @@ class TestCLIErrors(unittest.TestCase):
             }):
                 # Patch build_graph to raise ImportError (simulating absent graperoot)
                 with patch("thelink.cli.build_graph", side_effect=ImportError("graperoot not installed")):
-                    with patch("thelink.cli.read_session_events", return_value=[]):
+                    with patch("thelink.cli.read_session_events", return_value=[]), \
+                         patch("thelink.cli.read_egc_state", return_value=None):
                         code = main(["my query", "--project", td])
                         self.assertEqual(code, 1)
 
     def test_graph_build_failure_exits_1(self):
         with tempfile.TemporaryDirectory() as td:
             with patch("thelink.cli.build_graph", side_effect=RuntimeError("scan failed")):
-                with patch("thelink.cli.read_session_events", return_value=[]):
+                with patch("thelink.cli.read_session_events", return_value=[]), \
+                     patch("thelink.cli.read_egc_state", return_value=None):
                     code = main(["my query", "--project", td])
                     self.assertEqual(code, 1)
 
@@ -250,6 +253,7 @@ class TestCLISuccess(unittest.TestCase):
         buf = io.StringIO()
         with patch("thelink.cli.build_graph", return_value=self.MOCK_GRAPH), \
              patch("thelink.cli.read_session_events", return_value=[]), \
+             patch("thelink.cli.read_egc_state", return_value=None), \
              patch("sys.stdout", buf):
             code = main(argv + ["--project", project])
         return code, buf.getvalue()
@@ -292,7 +296,8 @@ class TestCLISuccess(unittest.TestCase):
                 return self.MOCK_GRAPH
 
             with patch("thelink.cli.build_graph", side_effect=mock_build), \
-                 patch("thelink.cli.read_session_events", return_value=[]):
+                 patch("thelink.cli.read_session_events", return_value=[]), \
+                 patch("thelink.cli.read_egc_state", return_value=None):
                 main(["query", "--project", td])
 
             self.assertTrue(
