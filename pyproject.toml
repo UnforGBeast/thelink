@@ -33,7 +33,7 @@ dependencies = [
 link = "thelink.cli:main"
 
 [project.urls]
-Repository = "https://github.com/your-org/the-link"
+Repository = "https://github.com/UnforGBeast/thelink"
 
 [tool.setuptools.packages.find]
 where = ["."]

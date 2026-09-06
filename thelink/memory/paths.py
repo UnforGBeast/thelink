@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Derived from EGC (Extended Global Context) — original Apache 2.0 license retained.
+# Derived from EGC - Extended Global Context (https://github.com/Fmarzochi/EGC)
+# Copyright 2026 Felipe Marzochi. Licensed under the Apache License, Version 2.0.
+# See NOTICE.
 """
 Portable path resolution for The Link runtime.
 """
