@@ -101,6 +101,69 @@ class TestBm25Index(unittest.TestCase):
         self.assertEqual(idx.expand(["zzzznope"]), [])
 
 
+class TestQueryExpansion(unittest.TestCase):
+    """expand(): an exact hit keeps its family, aliases bridge developer vocabulary."""
+
+    def test_exact_hit_still_reaches_prefix_family(self):
+        docs = [_doc("a.py", symbols="auth"), _doc("b.py", symbols="authentication")]
+        idx = _Bm25Index.build(docs)
+        expanded = dict(idx.expand(["auth"]))
+        self.assertEqual(expanded["auth"], 1.0)
+        self.assertEqual(expanded["authentication"], 0.5)
+
+    def test_alias_reaches_synonyms_present_in_corpus(self):
+        docs = [_doc("login_view.py", symbols="LoginView"),
+                _doc("session_store.py", symbols="SessionStore"),
+                _doc("billing.py", symbols="Invoice")]
+        idx = _Bm25Index.build(docs)
+        expanded = dict(idx.expand(["auth"]))
+        self.assertEqual(expanded.get("login"), 0.5)
+        self.assertEqual(expanded.get("session"), 0.5)
+        self.assertNotIn("invoice", expanded)
+        self.assertNotIn("bill", expanded)
+
+    def test_alias_only_for_terms_the_corpus_has(self):
+        docs = [_doc("a.py", symbols="widget")]
+        idx = _Bm25Index.build(docs)
+        self.assertEqual(idx.expand(["auth"]), [])
+
+    def test_aliases_are_stemmed_like_the_corpus(self):
+        docs = [_doc("a.py", symbols="logger"), _doc("b.py", symbols="logging")]
+        idx = _Bm25Index.build(docs)
+        from_logging = dict(idx.expand(tokenize("logging")))
+        from_logger = dict(idx.expand(tokenize("logger")))
+        self.assertEqual(from_logging.get("logger"), 0.5)
+        self.assertEqual(from_logger.get(tokenize("logging")[0]), 0.5)
+
+    def test_term_reached_twice_keeps_its_best_weight_once(self):
+        docs = [_doc("a.py", symbols="authentication")]
+        idx = _Bm25Index.build(docs)
+        expanded = idx.expand(["auth", "authentication"])
+        self.assertEqual(expanded, [("authentication", 1.0)])
+
+    def test_exact_hit_outranks_alias_hit(self):
+        docs = [_doc("login_view.py", symbols="LoginView"),
+                _doc("auth.py", symbols="AuthMiddleware")]
+        ranked = score_documents(docs, _ctx("auth"))
+        self.assertEqual(ranked[0].path, "auth.py")
+
+    def test_query_reaches_files_named_by_synonyms(self):
+        docs = [
+            _doc("src/auth.py", symbols="AuthMiddleware authenticate"),
+            _doc("src/authentication_service.py", symbols="AuthenticationService verify_token"),
+            _doc("src/login_view.py", symbols="LoginView render_login"),
+            _doc("src/session_store.py", symbols="SessionStore save_session"),
+            _doc("src/billing.py", symbols="Invoice charge"),
+        ]
+        ranked = score_documents(docs, _ctx("fix auth bug"))
+        scores = {sd.path: sd.total for sd in ranked}
+        self.assertEqual(ranked[0].path, "src/auth.py")
+        for reached in ("src/authentication_service.py", "src/login_view.py", "src/session_store.py"):
+            self.assertGreater(scores[reached], 0.0, reached)
+            self.assertGreater(scores[reached], scores["src/billing.py"], reached)
+        self.assertEqual(scores["src/billing.py"], 0.0)
+
+
 # ── score_documents / signals ───────────────────────────────────────────────
 
 class TestScoreDocuments(unittest.TestCase):
