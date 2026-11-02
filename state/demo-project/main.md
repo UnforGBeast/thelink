@@ -1,0 +1,1 @@
+{"egcTeamEnvelope":2,"path":"demo-project/main.md","data":"RUdDMTrVOthV3bQKM/H1vxs18spCekHWaB8S+vHpsQY7GDuZbzd+KCdlV0IlIUWDvUt3ppzPNUR+hjzlnRA1TR78mWJFyXL3A5utRPNoJxRSm7t6hbQh6FzDVWu7zsMe5XOE/3A8v17J9SxDZgY4+MBtLCN38Xt9rwAePElng/3TfCgT6Lwp5RxiePNl2VVCPY1cGCvtEg==","mac":"2a0259c609935c23fea7e15ac3b91519709218e7503991f80cea90c112ee7aa0"}
